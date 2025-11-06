@@ -266,7 +266,7 @@ func main() {
 			hostname = envHost
 			// 改进: 使用 fmt.Println，避免被 configureLogging 禁用
 			//fmt.Printf("Using hostname from environment variable GOMATE_HOST: %s\n", hostname)
-			log.Printf("Using hostname from environment variable GOMATE_HOST: %s\n", hostname)
+			// log.Printf("Using hostname from environment variable GOMATE_HOST: %s\n", hostname)
 		}
 	}
 
@@ -277,9 +277,9 @@ func main() {
 			if err == nil {
 				port = envPort
 				// fmt.Printf("Using port from environment variable GOMATE_PORT: %d\n", port)
-				log.Printf("Using port from environment variable GOMATE_PORT: %d\n", port)
+				// log.Printf("Using port from environment variable GOMATE_PORT: %d\n", port)
 			} else {
-				log.Printf("Warning: GOMATE_PORT environment variable is invalid. Using port %d", port)
+				// log.Printf("Warning: GOMATE_PORT environment variable is invalid. Using port %d", port)
 			}
 		}
 	}
@@ -340,7 +340,7 @@ func main() {
 	// 发送文件
 	for _, f := range flag.Args() {
 		// log.Printf("Send file %s to :%s", f, hostname)
-		fmt.Printf("Send file %s to :%s", f, hostname)
+		// fmt.Printf("Send file %s to :%s", f, hostname)
 		if err = sendFile(conn, f); err != nil {
 			log.Fatal(err) // sendFile 失败是致命的
 		}
