@@ -1,0 +1,67 @@
+name: Build gomate.exe for Windows
+
+on:
+  push:
+    # 仅当以下路径中的文件发生变化时，才触发此工作流
+    paths:
+      - 'gomate.go'
+      
+  pull_request:
+    # 通常，Pull Request 应该检查所有相关文件
+    branches: [ main, master ]
+    
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: windows-latest
+    # 给 Job 赋予权限，以便后续步骤可以创建 Release
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get Build Timestamp and Commit ID
+        id: vars
+        run: |
+          # 获取 UTC 时间戳，格式为 YYYYMMDD.HHMMSS
+          echo "TIMESTAMP=$(date -u +%Y%m%d.%H%M%S)" >> $GITHUB_OUTPUT
+          # 获取短 SHA
+          echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        shell: bash
+        
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21' 
+
+      - name: Compile gomate.exe
+        shell: powershell
+        run: |
+          $env:GOOS = 'windows'
+          $env:CGO_ENABLED = '0'
+          go build -o gomate.exe gomate.go
+
+      # -----------------------------------------------
+      # 部署阶段：自动创建 GitHub Release
+      # -----------------------------------------------
+      - name: Get latest commit ID
+        id: commit
+        run: echo "SHA=$(git rev-parse --short HEAD)" >> $env:GITHUB_OUTPUT
+        shell: bash
+      
+      - name: Create GitHub Release and Upload Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          # 使用步骤 1 中输出的 TIMESTAMP 和 SHA 作为 Tag
+          # Tag 示例: 20251104.224029_a1b2c3d
+          tag_name: ${{ format('{0}_{1}', steps.vars.outputs.TIMESTAMP, steps.vars.outputs.SHA) }}
+          
+          name: Gomate Windows Build ${{ steps.vars.outputs.TIMESTAMP }}
+          body: |
+            Automated build for Windows (gomate.exe).
+            Built at ${{ steps.vars.outputs.TIMESTAMP }} from commit ${{ steps.vars.outputs.SHA }}.
+          files: gomate.exe
+          
