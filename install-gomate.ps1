@@ -81,7 +81,7 @@ if (-not (Test-Path $gomateCoreDir)) { New-Item -Path $gomateCoreDir -ItemType D
 # VBScript 内容：接收一个命令字符串，并使用 Shell.Run(cmd, 0, false) 隐藏执行。
 $vbsContent = @"
 Set WshShell = CreateObject("WScript.Shell")
-command = Chr(34) & WScript.Arguments(0) & Chr(34) & " " & WScript.Arguments(1)
+command = WScript.Arguments(0)
 WshShell.Run command, 0, False
 "@
 
@@ -94,26 +94,8 @@ $cmdContent = @"
 setlocal
 set "GOMATE_EXE_PATH=%~dp0core\gomate.exe"
 set "GOMATE_VBS_PATH=%~dp0core\gomate.vbs"
-
-if not exist "%GOMATE_EXE_PATH%" (
-    echo.
-    echo ERROR: gomate.exe not found! Deploy to %GOMATE_EXE_PATH%
-    goto :eof
-)
-
-if "%1"=="" (
-    echo.
-    echo ERROR: Please provide the file path to edit.
-    goto :eof
-)
-
-set "ALL_ARGS=%*"
-cscript.exe //Nologo //B "%GOMATE_VBS_PATH%" "%GOMATE_EXE_PATH%" "%ALL_ARGS%"
-
-echo.
-echo [Gomate] Starting background editing process (Hidden, VBScript)...
-echo.
-
+set "CMD_LINE="%GOMATE_EXE_PATH%" %*"
+cscript.exe //Nologo //B "%GOMATE_VBS_PATH%" "%CMD_LINE%"
 endlocal
 "@
 $cmdContent | Out-File -FilePath $gomateCmdPath -Encoding ASCII
