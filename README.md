@@ -106,9 +106,9 @@ gomate C:\path\to\file.txt
 | **编辑器 (Sublime Text)** | **本地机器** | **服务器 (监听)** | 监听 52698 |
 | **客户端 (Gomate.exe)**   | **远程 VPS** | **客户端 (连接)** | 连接 52698 |
 
-**❓问题：** Gomate 客户端在远程 Windows VPS 上，因为本地机器可能在防火墙或 NAT 后面，远程 Windows VPS上面的Gomate 客户端无法直接连接到本地机器的`52698` 端口 ，需要通过 **反向端口转发 (Reverse Port Forwarding)** 来实现。
+**❓问题：** Gomate 客户端在远程 Windows VPS 上，因为本地机器可能在防火墙或 NAT 后面，远程 Windows VPS上面的Gomate 客户端无法直接连接到本地机器的`52698` 端口 ，如何设置？
 
-**✅方案：** 需要创建一个隧道，将 **本地 PC** 上的 `52698` 端口映射到 **VPS** 上的某个端口，使得 VPS 上的 `gomate.exe` 可以连接到这个 VPS 端口。 也就是`远程端口转发 (Remote Port Forwarding)`
+**✅方案：** 需要通过 **反向端口转发 (Reverse Port Forwarding)** 来实现。创建一个隧道，将 **本地 PC** 上的 `52698` 端口映射到 **VPS** 上的某个端口，使得 VPS 上的 `gomate.exe` 可以连接到这个 VPS 端口。 也就是`远程端口转发 (Remote Port Forwarding)`
 
 ### SSH 命令行参数 (`-R`)
 
