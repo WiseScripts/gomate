@@ -15,7 +15,7 @@ param(
 )
 
 # --- 配置信息 (请根据您的仓库信息修改) ---
-$GitHubUser = "WiseScripts"  # <-- 替换为您的 GitHub 用户名
+$GitHubUser = "WiseScripts" # <-- 替换为您的 GitHub 用户名
 $GitHubRepo = "gomate" # <-- 替换为您的仓库名
 $AssetName = "gomate.exe"
 
