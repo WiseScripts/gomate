@@ -233,7 +233,7 @@ Sublime Text 是 Gomate 客户端协议的原型目标。您需要安装并配�
 1. 打开 **Preferences > Package Settings > remote_subl > Settings - User**。
 2. 添加或修改以下配置：
 
-```JSON
+```ini
 {
     // 确保监听所有网络接口，以便 SSH 隧道可以连接到它
     "host": "127.0.0.1", 
