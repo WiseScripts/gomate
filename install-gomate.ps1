@@ -36,8 +36,8 @@ $VbsUrl = "$GitHubBaseUrl/gomate.vbs"
 # --- 辅助函数：设置系统环境变量 (保持不变) ---
 function Set-SystemEnvironmentVariable {
     param([Parameter(Mandatory=$true)][string]$Name, [Parameter(Mandatory=$true)][string]$Value)
-    [Environment]::SetEnvironmentVariable($Name, $Value, [EnvironmentVariableTarget]::Machine)
     Write-Host "✅ System environment variable $Name set to: $Value" -ForegroundColor Green
+    [Environment]::SetEnvironmentVariable($Name, $Value, [EnvironmentVariableTarget]::Machine)
 }
 
 # --------------------------------------------------------------------------------------
