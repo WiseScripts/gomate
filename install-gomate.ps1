@@ -5,7 +5,7 @@
 
 param(
     [Parameter(Mandatory=$false)]
-    [string]$host = "localhost",
+    [string]$hostname = "localhost",
 
     [Parameter(Mandatory=$false)]
     [int]$port = 52698,
@@ -103,8 +103,8 @@ try {
 # --- 3. 设置系统环境变量 ---
 Write-Host "`n--- 3. Setting System Environment Variables (GOMATE_HOST/GOMATE_PORT) ---" -ForegroundColor Yellow
 
-if (-not [string]::IsNullOrEmpty($host)) {
-    Set-SystemEnvironmentVariable -Name "GOMATE_HOST" -Value $host
+if (-not [string]::IsNullOrEmpty($hostname)) {
+    Set-SystemEnvironmentVariable -Name "GOMATE_HOST" -Value $hostname
 } else {
     Write-Host "Skipping GOMATE_HOST setting. Use --host or set env var manually." -ForegroundColor Cyan
 }
