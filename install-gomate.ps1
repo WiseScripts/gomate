@@ -5,7 +5,7 @@
 
 param(
     [Parameter(Mandatory=$false)]
-    [string]$hostname = "localhost",
+    [string]$host = "localhost",
 
     [Parameter(Mandatory=$false)]
     [int]$port = 52698,
@@ -15,18 +15,22 @@ param(
 )
 
 # --- 配置信息 (请根据您的仓库信息修改) ---
-$GitHubUser = "WiseScripts"  # <-- 替换为您的 GitHub 用户名
+$GitHubUser = "WiseScripts"  # <-- 替换为您的 GitHub 用户名
 $GitHubRepo = "gomate" # <-- 替换为您的仓库名
 $AssetName = "gomate.exe"
-
 
 # --- 动态路径定义 ---
 $gomateDir = $InstallDir
 $gomateCoreDir = Join-Path -Path $gomateDir -ChildPath "core"
 
 $gomateCmdPath = Join-Path -Path $gomateDir -ChildPath "gomate.cmd"
-$gomateExePath = Join-Path -Path $gomateCoreDir -ChildPath $AssetName
 $gomateVbsPath = Join-Path -Path $gomateCoreDir -ChildPath "gomate.vbs"
+$gomateExePath = Join-Path -Path $gomateCoreDir -ChildPath $AssetName
+
+# --- 仓库文件下载 URL ---
+$GitHubBaseUrl = "https://raw.githubusercontent.com/$GitHubUser/$GitHubRepo/refs/heads/main"
+$CmdUrl = "$GitHubBaseUrl/gomate.cmd"
+$VbsUrl = "$GitHubBaseUrl/gomate.vbs"
 
 
 # --- 辅助函数：设置系统环境变量 (保持不变) ---
@@ -41,9 +45,6 @@ function Set-SystemEnvironmentVariable {
 # --------------------------------------------------------------------------------------
 Write-Host "--- 1. Downloading latest $AssetName ---" -ForegroundColor Yellow
 
-# ... (下载逻辑与之前保持一致，确保下载到 $gomateExePath) ...
-# (为简洁省略下载 API 调用代码，请保留原 download 逻辑)
-
 try {
     # 查找最新 Release 的 API URL
     $ApiUrl = "https://api.github.com/repos/$GitHubUser/$GitHubRepo/releases/latest"
@@ -55,7 +56,7 @@ try {
     
     $DownloadUrl = $Asset.url
     
-    # 确保目录存在
+    # 确保核心目录存在
     if (-not (Test-Path $gomateCoreDir)) { New-Item -Path $gomateCoreDir -ItemType Directory -Force | Out-Null }
     
     # 下载文件 (需要设置 Headers 来处理重定向和认证)
@@ -69,46 +70,43 @@ try {
 
 
 # --------------------------------------------------------------------------------------
-# --- 2. 核心配置逻辑 ---
+# --- 2. 核心配置逻辑 (从 GitHub 下载 .cmd 和 .vbs) ---
 # --------------------------------------------------------------------------------------
 
 Write-Host "`n--- 2. Setting up configuration scripts and PATH ---" -ForegroundColor Yellow
 
+# 确保目录存在
 if (-not (Test-Path $gomateDir)) { New-Item -Path $gomateDir -ItemType Directory -Force | Out-Null }
-if (-not (Test-Path $gomateCoreDir)) { New-Item -Path $gomateCoreDir -ItemType Directory -Force | Out-Null } # 确保核心目录也存在
 
-# --- 2.1 创建通用 VBScript 隐藏启动器 (gomate.vbs) ---
-# VBScript 内容：接收一个命令字符串，并使用 Shell.Run(cmd, 0, false) 隐藏执行。
-$vbsContent = @"
-Set WshShell = CreateObject("WScript.Shell")
-command = WScript.Arguments(0)
-WshShell.Run command, 0, False
-"@
+# 确保核心目录也存在
+if (-not (Test-Path $gomateCoreDir)) { New-Item -Path $gomateCoreDir -ItemType Directory -Force | Out-Null } 
 
-$vbsContent | Out-File -FilePath $gomateVbsPath -Encoding ASCII
-Write-Host "✅ Hidden VBScript launcher $gomateVbsPath created." -ForegroundColor Green
+try {
+    # --- 2.1 下载 gomate.exe 隐藏启动器 (gomate.vbs) ---
+    Write-Host "Downloading gomate.vbs from repository: $VbsUrl"
+    # 使用 Invoke-WebRequest 下载原始文件内容
+    Invoke-WebRequest -Uri $VbsUrl -OutFile $gomateVbsPath -UseBasicParsing -ErrorAction Stop
+    Write-Host "✅ Downloaded gomate.vbs to $gomateVbsPath" -ForegroundColor Green
 
-# --- 2.2 创建 gomate.cmd (直接启动 VBScript) ---
-$cmdContent = @"
-@echo off
-setlocal
-set "GOMATE_EXE_PATH=%~dp0core\gomate.exe"
-set "GOMATE_VBS_PATH=%~dp0core\gomate.vbs"
-set "CMD_LINE="%GOMATE_EXE_PATH%" %*"
-cscript.exe //Nologo //B "%GOMATE_VBS_PATH%" "%CMD_LINE%"
-endlocal
-"@
-$cmdContent | Out-File -FilePath $gomateCmdPath -Encoding ASCII
-Write-Host "✅ Unified launcher $gomateCmdPath created." -ForegroundColor Green
+    # --- 2.2 下载 gomate.exe 启动脚本 (gomate.cmd) ---
+    Write-Host "Downloading gomate.cmd from repository: $CmdUrl"
+    # 使用 Invoke-WebRequest 下载原始文件内容
+    Invoke-WebRequest -Uri $CmdUrl -OutFile $gomateCmdPath -UseBasicParsing -ErrorAction Stop
+    Write-Host "✅ Downloaded gomate.cmd to $gomateCmdPath" -ForegroundColor Green
+    
+} catch {
+    Write-Error "Failed to download configuration scripts: $($_.Exception.Message)"
+    return
+}
 
 
 # --- 3. 设置系统环境变量 ---
-Write-Host "`n--- 3. Setting System Environment Variables (GOMATE_HOST/PORT) ---" -ForegroundColor Yellow
+Write-Host "`n--- 3. Setting System Environment Variables (GOMATE_HOST/GOMATE_PORT) ---" -ForegroundColor Yellow
 
-if (-not [string]::IsNullOrEmpty($hostname)) {
-    Set-SystemEnvironmentVariable -Name "GOMATE_HOST" -Value $hostname
+if (-not [string]::IsNullOrEmpty($host)) {
+    Set-SystemEnvironmentVariable -Name "GOMATE_HOST" -Value $host
 } else {
-    Write-Host "Skipping GOMATE_HOST setting. Use --hostname or set env var manually." -ForegroundColor Cyan
+    Write-Host "Skipping GOMATE_HOST setting. Use --host or set env var manually." -ForegroundColor Cyan
 }
 
 if ($port -ne 0) {
@@ -133,7 +131,7 @@ if ($currentPath -notlike "*$pathToAdd*") {
 
 # 确保 $gomateCoreDir 也在 PATH 中
 if ($newPath -notlike "*$gomateCoreDir*") {
-    $newPath = "$gomateCoreDir;$newPath"
+    # $newPath = "$gomateCoreDir;$newPath"
 }
 
 
