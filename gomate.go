@@ -1,3 +1,11 @@
+/*
+ * gomate - Windows Fork
+ * * Portions of this code are derived from github.com/mattn/gomate, 
+ * Copyright (c) 2014 Yasuhiro Matsumoto (a.k.a. mattn). 
+ * Original work is licensed under the MIT License.
+ * * See the included LICENSE.txt file for the full MIT License text.
+ */
+
 package main
 
 import (
