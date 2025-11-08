@@ -27,7 +27,7 @@ Gomate 是一个轻量级、健壮的跨平台命令行工具，用于通过网�
 | **参数**      | **默认值**      | **描述**                                |
 | ------------- | -------------- | --------------------------------------- |
 | `-InstallDir` | `C:\SW\gomate` | Gomate 启动脚本和核心文件存放的根目录。 |
-| `-host`       | `localhost`    | 设置默认的系统环境变量 `GOMATE_HOST`。  |
+| `-hostname`   | `localhost`    | 设置默认的系统环境变量 `GOMATE_HOST`。  |
 | `-port`       | `52698`        | 设置默认的系统环境变量 `GOMATE_PORT`。  |
 
 > 请将 `{WiseScripts}` 和 `{gomate}` 替换为您的实际仓库信息。
@@ -55,7 +55,7 @@ Gomate 是一个轻量级、健壮的跨平台命令行工具，用于通过网�
 您可以在安装时直接设置默认的远程主机名和端口
 
 ```PowerShell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/WiseScripts/gomate/refs/heads/main/install-gomate.ps1))) -host 1.2.3.4 -port 52698
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/WiseScripts/gomate/refs/heads/main/install-gomate.ps1))) -hostname 1.2.3.4 -port 52698
 ```
 
 > **注意：** 脚本执行完毕后，安装目录已经添加到系统的 **`PATH` 环境变量**中，重启开启CMD后可以在任何位置运行 `gomate.cmd`。
