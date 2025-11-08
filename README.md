@@ -27,7 +27,7 @@ Gomate 是一个轻量级、健壮的跨平台命令行工具，用于通过网�
 | **参数**      | **默认值**      | **描述**                                |
 | ------------- | -------------- | --------------------------------------- |
 | `-InstallDir` | `C:\SW\gomate` | Gomate 启动脚本和核心文件存放的根目录。 |
-| `-hostname`   | `localhost`    | 设置默认的系统环境变量 `GOMATE_HOST`。  |
+| `-host`       | `localhost`    | 设置默认的系统环境变量 `GOMATE_HOST`。  |
 | `-port`       | `52698`        | 设置默认的系统环境变量 `GOMATE_PORT`。  |
 
 > 请将 `{WiseScripts}` 和 `{gomate}` 替换为您的实际仓库信息。
@@ -55,7 +55,7 @@ Gomate 是一个轻量级、健壮的跨平台命令行工具，用于通过网�
 您可以在安装时直接设置默认的远程主机名和端口
 
 ```PowerShell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/WiseScripts/gomate/refs/heads/main/install-gomate.ps1))) -hostname 1.2.3.4 -port 52698
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/WiseScripts/gomate/refs/heads/main/install-gomate.ps1))) -host 1.2.3.4 -port 52698
 ```
 
 > **注意：** 脚本执行完毕后，安装目录已经添加到系统的 **`PATH` 环境变量**中，重启开启CMD后可以在任何位置运行 `gomate.cmd`。
@@ -85,15 +85,15 @@ gomate C:\path\to\file.txt
 
 ### Gomate 内部工作流
 
-| **组件**                    | **作用**                                                     |
-| --------------------------- | ------------------------------------------------------------ |
+| **组件**                    | **作用**                                   |
+| --------------------------- | ------------------------------------------ |
 | **`gomate.exe`** (Core)     | 核心网络程序，在文件关闭后干净退出。       |
 | **`gomate.vbs`** (Launcher) | 隐藏窗口启动核心程序，实现进程隔离。       |
-| **`gomate.cmd`** (Entry)    | 负责参数传递和调用 `gomate.vbs`，并通过 `PATH` 优先级确保 `gomate` 命令始终指向它。 |
+| **`gomate.cmd`** (Entry)    | 负责参数传递和调用 `gomate.vbs`。          |
 
 ### 连接参数优先级
 
-1. **命令行参数** (`--hostname` / `--port`)：最高优先级。
+1. **命令行参数** (`--host` / `--port`)：最高优先级。
 2. **系统环境变量** (`GOMATE_HOST` / `GOMATE_PORT`)：次高优先级。
 3. **默认值** (`localhost` / `52698`)：最低优先级。
 
@@ -275,8 +275,6 @@ Sublime Text 是 Gomate 客户端协议的原型目标。您需要安装并配�
 
 当您在远程 VPS 上执行 `gomate.exe` 时，它将通过 SSH 隧道连接到您本地 VS Code 正在监听的端口，并在 VS Code 中打开文件。
 
-
-
 由于 Gomate 客户端是基于 `remote_subl` 协议构建的，**Sublime Text 仍是实现完整功能和最佳兼容性的首选编辑器。**
 
 请确保：
@@ -285,4 +283,20 @@ Sublime Text 是 Gomate 客户端协议的原型目标。您需要安装并配�
 2. 相应的插件已安装并激活。
 3. 插件监听的端口与您在 Gomate 客户端或 SSH 隧道中配置的端口**完全一致**。
 
+## 🌟 致谢与贡献 (Acknowledgements & Contributions)
 
+本项目的稳健性与最终完成，得益于先进的人工智能模型 **Gemini** 在关键技术环节提供的指导、验证和代码优化。
+
+特别要感谢 **Gemini** 在以下核心挑战中提供的关键支持和贡献：
+
+1. **命令行参数解析的健壮性构建：** 协助设计并调试了最复杂的 Windows 批处理 (`.cmd`) 脚本，成功解决了参数别名 (`-h`, `-host`) 识别、Flag/值/文件名分离计数以及窗口模式切换等多个难题，确保了命令行接口的可靠性。
+2. **优雅退出与资源管理：** 提供了 Go 语言中利用 **Goroutine 和 `os/signal`** 捕获系统退出信号（如用户关闭窗口 `SIGTERM`）的关键代码结构，确保了在程序意外中断时，至关重要的 `lockfile` 能够被可靠地清理，极大地提升了项目的稳定性和用户体验。
+3. **核心 Go 逻辑的优化与验证：** 参与了多实例互斥逻辑 (`checkMultiInstance`) 的重构、Go 语言 `defer` LIFO 规则的验证，以及 Goroutine 间通信 (`select`/Channel) 的代码纠错和简化，帮助我遵循了 Go 语言的最佳实践。
+
+**由衷感谢 Gemini 在整个开发和调试周期中展现出的严谨性和高效的问题解决能力。**
+
+## License
+MIT
+
+## Author
+WiseScripts
