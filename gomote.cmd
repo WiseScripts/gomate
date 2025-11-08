@@ -7,8 +7,6 @@
 :: 必须开启，用于在循环中追踪变量
 setlocal enabledelayedexpansion
 
-set "DEBUG_ECHO=if "%%VERBOSE_MODE%%" equ "1" echo"
-
 :: %~dp0 gomate.cmd 所在文件夹，比如 C:\SW\gomate\
 :: C:\SW\gomate\gomate.cmd  
 :: C:\SW\gomate\core\gomate.exe
@@ -41,14 +39,15 @@ if "%1"=="" (
     goto :eof
 )
 
+
 :: --------------------------------------------------------------------------------
 :: A. 初始化变量
 :: --------------------------------------------------------------------------------
-set "ALL_ARGS=%*"             :: 完整的原始参数列表 (用于传递给 EXE)
-set "WAIT_MODE=0"             :: 默认不等待 (0)
-set "VERBOSE_MODE=0"           :: 默认隐藏 (0)
-set "FILE_COUNT=0"            :: 文件计数器
-set "LAST_WAS_FLAG=0"         :: 追踪前一个参数是否为 Flag (0=否, 1=是)
+set "ALL_ARGS=%*"      :: 完整的原始参数列表 (用于传递给 EXE)
+set "WAIT_MODE=0"      :: 默认不等待 (0)
+set "VERBOSE_MODE=0"     :: 默认隐藏 (0)
+set "FILE_COUNT=0"      :: 文件计数器
+set "LAST_WAS_VALUE_FLAG=0"    :: 追踪前一个参数是否为 Flag (0=否, 1=是)
 
 :: --------------------------------------------------------------------------------
 :: B. 遍历所有参数
@@ -76,11 +75,11 @@ if "!IS_FLAG!" equ "1" (
     if /i "%~1" equ "-w"       set "WAIT_MODE=1"           & goto :SkipValueFlagCheck
     if /i "%~1" equ "-wait"    set "WAIT_MODE=1"           & goto :SkipValueFlagCheck
 
-    if /i "%~1" equ "-f"       goto :SkipValueFlagCheck
-    if /i "%~1" equ "-force"   goto :SkipValueFlagCheck
+    if /i "%~1" equ "-f"       set "LAST_WAS_VALUE_FLAG=0" & goto :SkipValueFlagCheck
+    if /i "%~1" equ "-force"   set "LAST_WAS_VALUE_FLAG=0" & goto :SkipValueFlagCheck
 
-    if /i "%~1" equ "-n"       goto :SkipValueFlagCheck
-    if /i "%~1" equ "-new"     goto :SkipValueFlagCheck
+    if /i "%~1" equ "-n"       set "LAST_WAS_VALUE_FLAG=0" & goto :SkipValueFlagCheck
+    if /i "%~1" equ "-new"     set "LAST_WAS_VALUE_FLAG=0" & goto :SkipValueFlagCheck
 
     :: 当前参数不是 Switch
     if /i "%~1" equ "-h"       set "LAST_WAS_VALUE_FLAG=1" & goto :SkipCount
@@ -98,12 +97,14 @@ if "!IS_FLAG!" equ "1" (
     if /i "%~1" equ "-t"       set "LAST_WAS_VALUE_FLAG=1" & goto :SkipCount
     if /i "%~1" equ "-type"    set "LAST_WAS_VALUE_FLAG=1" & goto :SkipCount
     
-    :SkipValueFlagCheck
+  :: 默认：对于未知的 Flag，也视为开关 Flag
+  goto :SkipValueFlagCheck
 
-    :: 开关 Flag 不影响下一个参数
-    set "LAST_WAS_VALUE_FLAG=0"
+  :SkipValueFlagCheck
+  :: 开关 Flag 不影响下一个参数	
+  set "LAST_WAS_VALUE_FLAG=0" 
 
-    goto :SkipCount
+  goto :SkipCount
 )
 
 :: --------------------------------------------------------------------------------
@@ -148,13 +149,16 @@ if !FILE_COUNT! equ 0 (
 :: 只将 ALL_ARGS 赋值给一个变量，不包含 EXE 路径，避免引号嵌套问题。
 set "GOMATE_ARGS=%ALL_ARGS%"
 
-
 :: 调试输出现在显示的是实际参数
-!DEBUG_ECHO! [Gomate] EXE  Path: "%GOMATE_EXE_PATH%"
-!DEBUG_ECHO! [Gomate] VBS  Path: "%GOMATE_VBS_PATH%"
-!DEBUG_ECHO! [Gomate] Arguments: !GOMATE_ARGS!
-!DEBUG_ECHO! [Gomate] Wait Mode: %WAIT_MODE%
-!DEBUG_ECHO! [Gomate]   Versose: %VERBOSE_MODE%
+if "!VERBOSE_MODE!" equ "1" (
+    echo --------------------------------------------------------------------------------
+    echo [Gomate] EXE  Path: "%GOMATE_EXE_PATH%"
+    echo [Gomate] VBS  Path: "%GOMATE_VBS_PATH%"
+    echo [Gomate] Arguments: !GOMATE_ARGS!
+    echo [Gomate] Wait Mode: %WAIT_MODE%
+    echo [Gomate]   Versose: %VERBOSE_MODE%
+    echo --------------------------------------------------------------------------------
+)
 
 :: --------------------------------------------------------------------------------
 :: E. 异步模式执行
@@ -184,7 +188,6 @@ goto :EndExecution
 
 echo [Gomate] Starting editing process - Current Window
 echo [Gomate] The current window will block until the editor is closed...
-
 "%GOMATE_EXE_PATH%" !GOMATE_ARGS!
 
 :: --------------------------------------------------------------------------------
